@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guiones · Un Sábado en MIA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --verde:#1B4332;--verde-m:#2D6A4F;--teal:#2D9B6F;--teal-c:#52B788;
+  --crema:#FAF7F0;--crema-d:#F0EBE0;--texto:#1A1A1A;--suave:#5C5C5C;
+  --borde:#D8D0C4;--blanco:#FFFFFF;
+  --hook:#E76F51;--dev:#2D9B6F;--cta:#3A86FF;--vo:#7C3AED;
+  --unsaved:#F59E0B;
+}
+body{font-family:'Inter',sans-serif;background:var(--crema);color:var(--texto);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+header{background:var(--verde);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:12px}
+.h-left{display:flex;align-items:center;gap:10px;min-width:0}
+.h-brand{font-family:'Playfair Display',serif;font-size:17px;color:var(--crema);white-space:nowrap}
+.h-sep{width:1px;height:14px;background:rgba(250,247,240,.3);flex-shrink:0}
+.h-serie{font-size:11px;font-weight:500;color:var(--teal-c);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.h-unsaved{font-size:11px;color:var(--unsaved);font-weight:500;display:none;align-items:center;gap:5px}
+.h-unsaved.show{display:flex}
+.h-unsaved::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--unsaved);flex-shrink:0}
+.btn-hdr{border:none;padding:7px 16px;border-radius:4px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-import{background:rgba(250,247,240,.12);color:var(--crema)}
+.btn-import:hover{background:rgba(250,247,240,.22)}
+.btn-export{background:var(--teal);color:#fff}
+.btn-export:hover{background:var(--teal-c)}
+
+/* ── TABS ── */
+.tabs-wrap{background:var(--blanco);border-bottom:2px solid var(--borde);position:relative}
+.tabs-bar{padding:0 28px;display:flex;align-items:flex-end;gap:1px;overflow-x:auto;scrollbar-width:none}
+.tabs-bar::-webkit-scrollbar{display:none}
+.tabs-fade-r{position:absolute;right:0;top:0;bottom:2px;width:48px;background:linear-gradient(to right,transparent,var(--blanco));pointer-events:none}
+.tab{padding:12px 18px 10px;font-size:13px;font-weight:500;color:var(--suave);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s;background:transparent;border-top:none;border-left:none;border-right:none;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:7px}
+.tab:hover{color:var(--verde)}
+.tab.active{color:var(--verde);border-bottom-color:var(--teal);font-weight:600}
+.tab-badge{font-size:10px;font-weight:600;letter-spacing:.07em;color:var(--teal);background:rgba(45,155,111,.1);padding:2px 6px;border-radius:10px;transition:all .15s}
+.tab.active .tab-badge{background:var(--teal);color:#fff}
+.tab-vo .tab-badge{color:var(--vo);background:rgba(124,58,237,.1)}
+.tab-vo.active .tab-badge{background:var(--vo);color:#fff}
+.tab-dot-unsaved{width:6px;height:6px;border-radius:50%;background:var(--unsaved);flex-shrink:0;display:none}
+.tab-dot-unsaved.show{display:block}
+.btn-tab-add{padding:12px 13px 10px;font-size:17px;color:var(--suave);cursor:pointer;background:transparent;border:none;font-family:'Inter',sans-serif;line-height:1;transition:color .15s;margin-bottom:-2px}
+.btn-tab-add:hover{color:var(--teal)}
+
+/* ── EDITOR ── */
+.editor-wrap{flex:1;overflow-y:auto}
+.editor{padding:36px 44px 72px;max-width:800px;width:100%;margin:0 auto}
+
+.ep-hdr{margin-bottom:28px;position:relative}
+.ep-num-bg{position:absolute;top:-12px;right:0;font-family:'Playfair Display',serif;font-size:100px;font-weight:700;color:rgba(27,67,50,.05);line-height:1;pointer-events:none;user-select:none}
+.ep-eyebrow{font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--teal);margin-bottom:7px}
+.ep-eyebrow.vo{color:var(--vo)}
+.titulo-inp{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--verde);border:none;background:transparent;outline:none;width:100%;border-bottom:2px solid transparent;padding-bottom:2px;transition:border-color .2s}
+.titulo-inp:focus{border-bottom-color:var(--teal)}
+.ep-meta{font-size:12px;color:var(--suave);margin-top:5px}
+.ep-meta span{display:inline-block;margin-right:14px}
+
+/* ── SCRIPT CORRIDO ── */
+.script-card{background:var(--blanco);border:1px solid var(--borde);border-radius:10px;overflow:hidden;margin-top:4px}
+.bloque{display:grid;grid-template-columns:106px 1fr;border-bottom:1px solid var(--crema-d);transition:background .15s}
+.bloque:last-child{border-bottom:none}
+.bloque:focus-within{background:rgba(45,155,111,.025)}
+.b-etiq{padding:16px 14px 16px 18px;display:flex;flex-direction:column;align-items:flex-start;gap:5px;border-right:1px solid var(--crema-d);background:var(--crema)}
+.b-dot{width:7px;height:7px;border-radius:50%}
+.d-hook{background:var(--hook)}.d-dev{background:var(--dev)}.d-cta{background:var(--cta)}
+.b-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--suave)}
+.b-time{font-size:10px;color:#bbb;line-height:1.3}
+.b-body{display:flex;flex-direction:column}
+.b-body textarea{font-family:'Inter',sans-serif;font-size:14px;line-height:1.7;color:var(--texto);background:transparent;border:none;outline:none;resize:none;padding:16px 22px;width:100%;min-height:82px}
+.b-body textarea:focus{background:rgba(45,155,111,.02)}
+.b-sep{height:1px;background:var(--crema-d);margin:0 22px}
+.b-voz-lbl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--suave);padding:7px 22px 0}
+.b-body textarea.voz{min-height:48px;font-style:italic;color:#2D6A4F;padding-top:5px;padding-bottom:13px}
+
+/* ── VOZ EN OFF ── */
+.vo-card{background:var(--blanco);border:1px solid var(--borde);border-radius:10px;overflow:hidden;margin-top:4px}
+.vo-hdr{background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(45,155,111,.03));padding:13px 22px;border-bottom:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between}
+.vo-badge{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--vo);background:rgba(124,58,237,.1);padding:3px 10px;border-radius:12px}
+.vo-dur{font-size:11px;color:var(--suave)}
+.vo-ta{font-family:'Inter',sans-serif;font-size:15px;line-height:2;color:var(--texto);background:transparent;border:none;outline:none;resize:none;padding:26px 30px;width:100%;min-height:300px}
+.vo-ta:focus{background:rgba(124,58,237,.015)}
+.vo-nota{padding:0 30px 18px;font-size:11px;color:#bbb;font-style:italic}
+
+/* ── FOOTER ── */
+.ep-footer{margin-top:22px;padding-top:18px;border-top:1px solid var(--borde);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.pilares{display:flex;gap:7px;flex-wrap:wrap}
+.ptag{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500}
+.p-alcance{background:rgba(45,155,111,.1);color:var(--teal)}
+.p-conversion{background:rgba(58,134,255,.1);color:#3A86FF}
+.p-engagement{background:rgba(231,111,81,.12);color:var(--hook)}
+.p-comunidad{background:rgba(108,99,255,.1);color:#6C63FF}
+.p-vo{background:rgba(124,58,237,.1);color:var(--vo)}
+.ftr-actions{display:flex;gap:8px;align-items:center}
+.btn-del{background:transparent;border:1px solid #e0c0c0;color:#c0392b;padding:8px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;transition:all .2s}
+.btn-del:hover{background:#fff0f0}
+.btn-copy{background:transparent;border:1px solid var(--borde);color:var(--suave);padding:8px 14px;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;transition:all .2s}
+.btn-copy:hover{border-color:var(--teal);color:var(--teal)}
+.btn-save{background:var(--verde);color:#fff;border:none;padding:9px 20px;border-radius:5px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .2s}
+.btn-save:hover{background:var(--verde-m)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--verde);color:#fff;padding:11px 18px;border-radius:6px;font-size:13px;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:999;max-width:280px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.warn{background:#92400E}
+.toast.info{background:#1E40AF}
+
+/* ── MODAL BASE ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s;padding:16px}
+.overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--blanco);border-radius:12px;width:100%;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-hdr{padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.modal-hdr h3{font-family:'Playfair Display',serif;font-size:21px;color:var(--verde)}
+.btn-close{background:transparent;border:none;font-size:20px;color:var(--suave);cursor:pointer;line-height:1;padding:2px 6px;border-radius:4px}
+.btn-close:hover{color:var(--texto);background:var(--crema-d)}
+.modal-body{padding:20px 28px 28px;display:flex;flex-direction:column;gap:16px}
+.mfield{display:flex;flex-direction:column;gap:5px}
+.mfield label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--suave)}
+.mfield input,.mfield select,.mfield textarea{font-family:'Inter',sans-serif;font-size:14px;color:var(--texto);background:var(--crema);border:1px solid var(--borde);border-radius:6px;padding:9px 12px;outline:none;transition:border-color .2s}
+.mfield input:focus,.mfield select:focus,.mfield textarea:focus{border-color:var(--teal);background:var(--blanco)}
+.mfield textarea{resize:vertical;line-height:1.6}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;padding-top:4px}
+.btn-cancel{background:transparent;border:1px solid var(--borde);color:var(--suave);padding:9px 18px;border-radius:5px;font-family:'Inter',sans-serif;font-size:13px;cursor:pointer}
+
+/* ── MODAL IMPORTAR ── */
+.modal.import-modal{max-width:640px}
+.import-tabs{display:flex;border-bottom:1px solid var(--borde);margin:0 28px}
+.itab{padding:11px 16px 9px;font-size:13px;font-weight:500;color:var(--suave);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:transparent;border-top:none;border-left:none;border-right:none;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
+.itab.active{color:var(--verde);border-bottom-color:var(--teal);font-weight:600}
+.itab:hover{color:var(--verde)}
+.ipanel{display:none;padding:20px 28px 0}
+.ipanel.active{display:flex;flex-direction:column;gap:14px}
+
+/* drop zone */
+.dropzone{border:2px dashed var(--borde);border-radius:8px;padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--crema)}
+.dropzone:hover,.dropzone.over{border-color:var(--teal);background:rgba(45,155,111,.04)}
+.dropzone p{font-size:14px;color:var(--suave);line-height:1.5}
+.dropzone em{color:var(--teal);font-style:normal;font-weight:500}
+.dropzone input[type=file]{display:none}
+.import-preview{background:var(--crema);border:1px solid var(--borde);border-radius:6px;padding:12px 14px;max-height:180px;overflow-y:auto;font-size:13px;line-height:1.6;color:var(--suave);font-family:monospace;white-space:pre-wrap;display:none}
+.import-preview.show{display:block}
+
+/* quick import list */
+.quick-list{display:flex;flex-direction:column;gap:8px}
+.quick-item{display:flex;align-items:center;justify-content:space-between;background:var(--crema);border:1px solid var(--borde);border-radius:7px;padding:11px 14px;gap:10px}
+.qi-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.qi-title{font-size:13px;font-weight:600;color:var(--verde);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qi-meta{font-size:11px;color:var(--suave)}
+.qi-check{width:18px;height:18px;accent-color:var(--teal);flex-shrink:0;cursor:pointer}
+.import-note{font-size:12px;color:var(--suave);font-style:italic;padding:4px 0}
+
+/* paste area */
+.paste-hint{font-size:12px;color:var(--suave);line-height:1.6}
+.paste-hint code{background:var(--crema-d);padding:1px 5px;border-radius:3px;font-size:11px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .editor{padding:20px 14px 60px}
+  .bloque{grid-template-columns:76px 1fr}
+  .titulo-inp{font-size:22px}
+  .ep-num-bg{font-size:70px}
+  .h-serie{display:none}
+  header{padding:12px 16px}
+  .tabs-bar{padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-left">
+    <span class="h-brand">La Firma</span>
+    <div class="h-sep"></div>
+    <span class="h-serie">Un Sábado en MIA · Guiones</span>
+  </div>
+  <div class="h-right">
+    <span class="h-unsaved" id="unsaved-ind">Sin guardar</span>
+    <button class="btn-hdr btn-import" onclick="abrirImport()">↑ Importar</button>
+    <button class="btn-hdr btn-export" onclick="exportarTodo()">↓ Exportar</button>
+  </div>
+</header>
+
+<div class="tabs-wrap">
+  <div class="tabs-bar" id="tabs-bar"></div>
+  <div class="tabs-fade-r"></div>
+</div>
+
+<div class="editor-wrap">
+  <main class="editor" id="editor"></main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL NUEVO EPISODIO -->
+<div class="overlay" id="ov-nuevo">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-hdr">
+      <h3>Nuevo episodio</h3>
+      <button class="btn-close" onclick="cerrarOverlay('ov-nuevo')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="mfield"><label>Título</label><input type="text" id="n-titulo" placeholder="Ej: El día de la música"></div>
+      <div class="mfield"><label>Duración</label><input type="text" id="n-dur" placeholder="Ej: 60–75 seg"></div>
+      <div class="mfield"><label>Eje temático</label><input type="text" id="n-eje" placeholder="Ej: Identidad y cultura"></div>
+      <div class="mfield">
+        <label>Tipo</label>
+        <select id="n-tipo">
+          <option value="reel">Reel con bloques (Hook / Desarrollo / CTA)</option>
+          <option value="voz">Solo voz en off</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="cerrarOverlay('ov-nuevo')">Cancelar</button>
+        <button class="btn-save" onclick="crearEp()">Crear episodio</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORTAR -->
+<div class="overlay" id="ov-import">
+  <div class="modal import-modal">
+    <div class="modal-hdr">
+      <h3>Importar guiones</h3>
+      <button class="btn-close" onclick="cerrarOverlay('ov-import')">×</button>
+    </div>
+    <div class="import-tabs">
+      <button class="itab active" onclick="switchITab(0)">Sesión actual</button>
+      <button class="itab" onclick="switchITab(1)">Pegar texto</button>
+      <button class="itab" onclick="switchITab(2)">Subir archivo</button>
+    </div>
+
+    <!-- PANEL 0: guiones de esta sesión -->
+    <div class="ipanel active" id="ip0">
+      <p class="import-note">Guiones generados en esta sesión listos para agregar.</p>
+      <div class="quick-list" id="quick-list"></div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="cerrarOverlay('ov-import')">Cancelar</button>
+        <button class="btn-save" onclick="importarSeleccionados()">Agregar seleccionados</button>
+      </div>
+    </div>
+
+    <!-- PANEL 1: pegar texto -->
+    <div class="ipanel" id="ip1">
+      <div class="paste-hint">
+        Pegá uno o varios guiones. Cada guión debe empezar con <code>## Título</code> en la primera línea.<br>
+        Bloques: <code>[HOOK]</code> <code>[DESARROLLO]</code> <code>[CTA]</code> o <code>[VOZ EN OFF]</code>
+      </div>
+      <div class="mfield">
+        <label>Texto a importar</label>
+        <textarea id="paste-ta" rows="10" placeholder="## El acento que no querés perder&#10;Duración: 45–60 seg&#10;&#10;[HOOK]&#10;Cámara: Plano medio, chico con amigos...&#10;Voz: &#10;&#10;[DESARROLLO]&#10;..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="cerrarOverlay('ov-import')">Cancelar</button>
+        <button class="btn-save" onclick="importarPaste()">Parsear e importar</button>
+      </div>
+    </div>
+
+    <!-- PANEL 2: archivo -->
+    <div class="ipanel" id="ip2">
+      <p class="import-note">Subí un <code>.txt</code> con el mismo formato que exporta esta app, o múltiples guiones separados por <code>══</code></p>
+      <div class="dropzone" id="dropzone" onclick="document.getElementById('file-inp').click()">
+        <input type="file" id="file-inp" accept=".txt,.json" multiple onchange="onFileSelect(event)">
+        <p>Arrastrá archivos acá o <em>hacé click para seleccionar</em><br><small>Admite múltiples archivos .txt o un .json exportado</small></p>
+      </div>
+      <div class="import-preview" id="file-preview"></div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="cerrarOverlay('ov-import')">Cancelar</button>
+        <button class="btn-save" id="btn-import-file" onclick="importarArchivo()" disabled style="opacity:.5;cursor:not-allowed">Importar archivo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+const EP_SESION = [
+  {
+    id: 'ses_5', titulo: 'El acento que no querés perder',
+    duracion: '45–60 seg', eje: 'Identidad · Sin narración', tipo: 'reel',
+    pilares: ['alcance','engagement'],
+    bloques: [
+      {tipo:'hook',timing:'0 a 3 seg',instruccion:'Plano medio. Chico en la calle con amigos. Risas. Inglés fluido, acento americano perfecto.',voz:''},
+      {tipo:'desarrollo',timing:'3 a 40 seg',instruccion:'Corte seco. Mismo chico, mismo día. Entra a casa. Su abuela lo llama desde la cocina. Cambia de idioma sin pensarlo — el español sale natural, cálido, con el acento de la familia. Sin música dramática. Solo el sonido real de la casa.',voz:''},
+      {tipo:'cta',timing:'40 a 60 seg',instruccion:'Pantalla negra. Texto blanco, una línea. Dos segundos. Logo MIA.',voz:'Tener los dos no es confusión. Es ventaja.'}
+    ]
+  },
+  {
+    id: 'ses_6', titulo: 'Lo que no te enseñan en Google Translate',
+    duracion: '15 seg c/u · serie', eje: 'Identidad y cultura', tipo: 'reel',
+    pilares: ['engagement','comunidad'],
+    bloques: [
+      {tipo:'hook',timing:'0 a 3 seg',instruccion:'Docente a cámara, directo, casi confesional.',voz:'Google Translate no tiene traducción para esta palabra.'},
+      {tipo:'desarrollo',timing:'3 a 12 seg',instruccion:'Mientras habla: plano de una mesa después del almuerzo en la escuela. Platos vacíos, chicos todavía sentados, alguien gesticula contando algo.',voz:'Sobremesa. Es cuando terminaste de comer pero nadie se quiere levantar. Porque la conversación es mejor que la comida.'},
+      {tipo:'cta',timing:'12 a 15 seg',instruccion:'Texto en pantalla. Logo MIA pequeño, esquina inferior.',voz:'SOBREMESA — no translation available.'}
+    ]
+  },
+  {
+    id: 'ses_7', titulo: 'Carta a mi yo de 12 años',
+    duracion: '75–90 seg', eje: 'Conversión · Testimonio', tipo: 'reel',
+    pilares: ['conversion','comunidad'],
+    bloques: [
+      {tipo:'hook',timing:'0 a 4 seg',instruccion:'Alumno sentado, papel en mano, sin mirar a cámara. Empieza a leer en voz baja, casi para sí mismo. Levanta la vista. Pausa.',voz:'Querido yo de 12 años: lo que más miedo te da es lo que más te va a definir.'},
+      {tipo:'desarrollo',timing:'4 a 65 seg',instruccion:'Lee la carta. Sin edición de texto — que sea la carta real, con los errores y los titubeos. Intercalado con planos del aula, el patio, un momento de clase. Sin voz en off encima — la carta es el audio, las imágenes son el contexto visual. Toca tres cosas: cómo era antes de MIA, qué cambió, algo sobre el idioma o la identidad.',voz:''},
+      {tipo:'cta',timing:'65 a 90 seg',instruccion:'El chico baja el papel. Mira a cámara.',voz:'Ojalá alguien me hubiera contado esto antes. — Escuela MIA · Inscripciones abiertas · Link en bio.'}
+    ]
+  }
+];
+
+let eps = [
+  {
+    id:1, titulo:'Los talleres', duracion:'60–75 seg', eje:'Experiencia real', tipo:'reel',
+    pilares:['alcance','engagement'], dirty:false,
+    bloques:[
+      {tipo:'hook',timing:'0 a 3 seg',instruccion:'Plano detalle: manos de un chico armando algo en el taller de robótica. Sin texto. El sonido ambiente hace el trabajo.',voz:''},
+      {tipo:'desarrollo',timing:'3 a 50 seg',instruccion:'Cortes rápidos entre los tres talleres: arte, música, robótica. Nada posado — los chicos en acción, riendo, concentrados. Planos de detalle: pinceles, cables, un instrumento. El español suena todo el tiempo.',voz:'Acá no es solo estudiar. Los sábados son distintos.'},
+      {tipo:'cta',timing:'50 a 75 seg',instruccion:'Freeze en un plano grupal.',voz:'¿Querés que tu hijo viva esto? → Link en bio.'}
+    ]
+  },
+  {
+    id:2, titulo:'Un docente, una historia', duracion:'60–75 seg', eje:'Identidad y cultura', tipo:'reel',
+    pilares:['engagement','comunidad'], dirty:false,
+    bloques:[
+      {tipo:'hook',timing:'0 a 3 seg',instruccion:'Docente mirando a cámara, pausa. Corte antes de terminar la frase.',voz:'Lo que más me sorprende de estos chicos es...'},
+      {tipo:'desarrollo',timing:'3 a 50 seg',instruccion:'El docente termina la idea en off mientras vemos planos del aula: chicos hablando en español, una fecha patria en el pizarrón, risas. Ritmo tranquilo.',voz:'...que saben exactamente quiénes son.'},
+      {tipo:'cta',timing:'50 a 75 seg',instruccion:'Plano institucional limpio.',voz:'Escuela MIA · Educación bicultural en Miami. Conocé más → Link en bio.'}
+    ]
+  },
+  {
+    id:3, titulo:'La familia que llegó sin conocer a nadie', duracion:'75–90 seg', eje:'Comunidad e historias reales', tipo:'reel',
+    pilares:['conversion','comunidad'], dirty:false,
+    bloques:[
+      {tipo:'hook',timing:'0 a 3 seg',instruccion:'Madre a cámara, informal, como si le contara a una amiga.',voz:'Cuando llegamos a Miami, no conocíamos a nadie.'},
+      {tipo:'desarrollo',timing:'3 a 60 seg',instruccion:'Ella habla sin guión forzado — solo guía de preguntas fuera de cámara. Intercalado con imágenes de su hijo en la escuela. Puntos: el idioma, la identidad, lo que encontraron en MIA.',voz:''},
+      {tipo:'cta',timing:'60 a 90 seg',instruccion:'Su voz como cierre natural. Texto superpuesto en pantalla.',voz:'Si están considerando MIA, háganlo. Open house · Septiembre 2026 → Link en bio.'}
+    ]
+  },
+  {
+    id:4, titulo:'Entre dos mundos', duracion:'~60 seg', eje:'Storytelling · Voz en off', tipo:'voz',
+    pilares:['alcance','conversion','vo'], dirty:false,
+    voText:`Hay chicos que crecen en dos idiomas.
+Que saben cantar el himno en español y entender las bromas en inglés.
+Que en casa son una cosa, y afuera... aprenden a ser otra.
+
+No porque quieran.
+Sino porque nadie les dijo que podían ser las dos al mismo tiempo.
+
+En Escuela MIA, eso tiene un nombre: biculturalidad.
+Y tiene un lugar: el aula.
+
+Acá los chicos no eligen entre sus raíces y su futuro.
+Los llevan juntos, todos los días.
+
+Porque crecer entre dos culturas no es una dificultad.
+Es una ventaja.
+Si alguien los acompaña bien.
+
+Escuela MIA. Inscripciones abiertas.`
+  }
+];
+
+let activo = 1;
+let nextId = 10;
+let fileBuffer = null;
+let iTabActivo = 0;
+
+const PIL = {
+  alcance:    ['p-alcance','Alcance orgánico'],
+  conversion: ['p-conversion','Conversión'],
+  engagement: ['p-engagement','Engagement'],
+  comunidad:  ['p-comunidad','Comunidad'],
+  vo:         ['p-vo','Voz en off']
+};
+
+const BCFG = {
+  hook:       {dot:'d-hook',label:'Hook'},
+  desarrollo: {dot:'d-dev', label:'Desarrollo'},
+  cta:        {dot:'d-cta', label:'CTA'}
+};
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function renderTabs(){
+  const bar = document.getElementById('tabs-bar');
+  bar.innerHTML='';
+  eps.forEach((ep,i)=>{
+    const btn=document.createElement('button');
+    btn.className='tab'+(ep.id===activo?' active':'')+(ep.tipo==='voz'?' tab-vo':'');
+    btn.innerHTML=`<span class="tab-badge">EP${String(i+1).padStart(2,'0')}</span>${H(ep.titulo)}<span class="tab-dot-unsaved${ep.dirty?' show':''}"></span>`;
+    btn.onclick=()=>{activo=ep.id;renderAll()};
+    bar.appendChild(btn);
+  });
+  const add=document.createElement('button');
+  add.className='btn-tab-add'; add.title='Nuevo episodio'; add.textContent='+';
+  add.onclick=()=>abrirOverlay('ov-nuevo');
+  bar.appendChild(add);
+  // unsaved indicator global
+  const anyDirty=eps.some(e=>e.dirty);
+  document.getElementById('unsaved-ind').classList.toggle('show',anyDirty);
+}
+
+function renderEditor(){
+  const ep=eps.find(e=>e.id===activo); if(!ep) return;
+  const idx=eps.indexOf(ep);
+  const isVo=ep.tipo==='voz';
+
+  const pilHTML=(ep.pilares||[]).map(p=>{
+    if(!PIL[p])return'';
+    return`<span class="ptag ${PIL[p][0]}">${PIL[p][1]}</span>`;
+  }).join('');
+
+  let body='';
+  if(isVo){
+    body=`<div class="vo-card">
+      <div class="vo-hdr">
+        <span class="vo-badge">Voz en off · Solo narración</span>
+        <span class="vo-dur">${H(ep.duracion)} · ~150 palabras</span>
+      </div>
+      <textarea class="vo-ta" oninput="upVo(${ep.id},this.value)">${H(ep.voText||'')}</textarea>
+      <div class="vo-nota">Cada línea en blanco = pausa. Cada párrafo = corte de imagen sugerido.</div>
+    </div>`;
+  } else {
+    const bls=(ep.bloques||[]).map((b,bi)=>{
+      const c=BCFG[b.tipo]||{dot:'d-hook',label:b.tipo};
+      return`<div class="bloque">
+        <div class="b-etiq">
+          <div class="b-dot ${c.dot}"></div>
+          <span class="b-label">${c.label}</span>
+          <span class="b-time">${H(b.timing)}</span>
+        </div>
+        <div class="b-body">
+          <textarea rows="3" placeholder="Indicación de cámara / acción visual..." oninput="upBloque(${ep.id},${bi},'instruccion',this.value)">${H(b.instruccion)}</textarea>
+          <div class="b-sep"></div>
+          <div class="b-voz-lbl">Voz / texto en pantalla</div>
+          <textarea class="voz" rows="2" placeholder="${b.tipo==='desarrollo'?'Opcional — voz en off si aplica':'Texto hablado o en pantalla'}" oninput="upBloque(${ep.id},${bi},'voz',this.value)">${H(b.voz)}</textarea>
+        </div>
+      </div>`;
+    }).join('');
+    body=`<div class="script-card">${bls}</div>`;
+  }
+
+  document.getElementById('editor').innerHTML=`
+    <div class="ep-hdr">
+      <div class="ep-num-bg">${String(idx+1).padStart(2,'0')}</div>
+      <div class="ep-eyebrow${isVo?' vo':''}">EP · ${String(idx+1).padStart(2,'0')} · ${H(ep.duracion)} · ${H(ep.eje)}</div>
+      <input class="titulo-inp" type="text" value="${HA(ep.titulo)}" oninput="upTitulo(${ep.id},this.value)">
+      <div class="ep-meta"><span>Serie: Un Sábado en MIA</span><span>Cliente: Escuela MIA · Miami</span></div>
+    </div>
+    ${body}
+    <div class="ep-footer">
+      <div class="pilares">${pilHTML}</div>
+      <div class="ftr-actions">
+        ${eps.length>1?`<button class="btn-del" onclick="delEp(${ep.id})">Eliminar</button>`:''}
+        <button class="btn-copy" onclick="copyEp(${ep.id})">Copiar guión</button>
+        <button class="btn-save" onclick="guardar()">Guardar</button>
+      </div>
+    </div>`;
+}
+
+function renderAll(){renderTabs();renderEditor()}
+
+// ═══════════════════════════════════════════════════════
+// UPDATES
+// ═══════════════════════════════════════════════════════
+function markDirty(id){
+  const ep=eps.find(e=>e.id===id); if(ep) ep.dirty=true;
+  document.getElementById('unsaved-ind').classList.add('show');
+  // dot on tab
+  renderTabs();
+}
+function upTitulo(id,v){const ep=eps.find(e=>e.id===id);if(ep){ep.titulo=v;markDirty(id);renderTabs()}}
+function upBloque(id,bi,f,v){const ep=eps.find(e=>e.id===id);if(ep){ep.bloques[bi][f]=v;markDirty(id)}}
+function upVo(id,v){const ep=eps.find(e=>e.id===id);if(ep){ep.voText=v;markDirty(id)}}
+
+// ═══════════════════════════════════════════════════════
+// GUARDAR
+// ═══════════════════════════════════════════════════════
+function guardar(){
+  eps.forEach(e=>e.dirty=false);
+  try{localStorage.setItem('mia_g',JSON.stringify(eps))}catch(e){}
+  document.getElementById('unsaved-ind').classList.remove('show');
+  renderTabs();
+  toast('Guardado ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// CREAR / ELIMINAR
+// ═══════════════════════════════════════════════════════
+function crearEp(){
+  const t=document.getElementById('n-titulo').value.trim();
+  if(!t){toast('Agregá un título','warn');return}
+  const tipo=document.getElementById('n-tipo').value;
+  const ep={
+    id:nextId++,
+    titulo:t,
+    duracion:document.getElementById('n-dur').value||'60–90 seg',
+    eje:document.getElementById('n-eje').value||'Sin definir',
+    tipo, pilares:['alcance'], dirty:false
+  };
+  if(tipo==='voz') ep.voText='';
+  else ep.bloques=[
+    {tipo:'hook',timing:'0 a 3 seg',instruccion:'',voz:''},
+    {tipo:'desarrollo',timing:'3 a 50 seg',instruccion:'',voz:''},
+    {tipo:'cta',timing:'50 a 75 seg',instruccion:'',voz:''}
+  ];
+  eps.push(ep); activo=ep.id;
+  cerrarOverlay('ov-nuevo');
+  ['n-titulo','n-dur','n-eje'].forEach(i=>document.getElementById(i).value='');
+  renderAll(); toast('Episodio creado ✓');
+}
+
+function delEp(id){
+  if(!confirm('¿Eliminar este episodio?'))return;
+  eps=eps.filter(e=>e.id!==id);
+  activo=eps[0].id;
+  guardar(); renderAll(); toast('Episodio eliminado');
+}
+
+// ═══════════════════════════════════════════════════════
+// COPIAR / EXPORTAR
+// ═══════════════════════════════════════════════════════
+function copyEp(id){
+  const ep=eps.find(e=>e.id===id);
+  let t=`${ep.titulo.toUpperCase()}\n${ep.duracion} · ${ep.eje}\n${'─'.repeat(38)}\n\n`;
+  if(ep.tipo==='voz') t+=ep.voText||'';
+  else ep.bloques.forEach(b=>{
+    t+=`[${b.tipo.toUpperCase()} — ${b.timing}]\n`;
+    if(b.instruccion)t+=`${b.instruccion}\n`;
+    if(b.voz)t+=`"${b.voz}"\n`;
+    t+='\n';
+  });
+  navigator.clipboard.writeText(t).then(()=>toast('Guión copiado ✓'));
+}
+
+function exportarTodo(){
+  let t=`UN SÁBADO EN MIA — Guiones de producción\nLa Firma · Junio 2026\n${'═'.repeat(48)}\n\n`;
+  eps.forEach((ep,i)=>{
+    t+=`EP ${String(i+1).padStart(2,'0')} — ${ep.titulo.toUpperCase()}\n`;
+    t+=`Duración: ${ep.duracion} · Eje: ${ep.eje}\n${'─'.repeat(38)}\n\n`;
+    if(ep.tipo==='voz') t+=`[VOZ EN OFF]\n\n${ep.voText||''}\n\n`;
+    else ep.bloques.forEach(b=>{
+      t+=`[${b.tipo.toUpperCase()} — ${b.timing}]\n`;
+      if(b.instruccion)t+=`Cámara: ${b.instruccion}\n`;
+      if(b.voz)t+=`Voz: "${b.voz}"\n`;
+      t+='\n';
+    });
+    t+=`${'═'.repeat(48)}\n\n`;
+  });
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));
+  a.download='mia_guiones.txt'; a.click();
+  toast('Exportado ✓');
+}
+
+// ═══════════════════════════════════════════════════════
+// IMPORTAR — OVERLAY
+// ═══════════════════════════════════════════════════════
+function abrirImport(){
+  // poblar quick list
+  const ql=document.getElementById('quick-list');
+  ql.innerHTML='';
+  EP_SESION.forEach(ep=>{
+    const yaEsta=eps.some(e=>e.id===ep.id||e.titulo===ep.titulo);
+    const item=document.createElement('div');
+    item.className='quick-item';
+    item.innerHTML=`
+      <div class="qi-info">
+        <span class="qi-title">${H(ep.titulo)}</span>
+        <span class="qi-meta">${H(ep.duracion)} · ${H(ep.eje)}</span>
+      </div>
+      <input type="checkbox" class="qi-check" data-id="${ep.id}" ${yaEsta?'disabled title="Ya importado"':''} ${yaEsta?'':'checked'}>`;
+    ql.appendChild(item);
+  });
+  abrirOverlay('ov-import');
+}
+
+function switchITab(n){
+  iTabActivo=n;
+  document.querySelectorAll('.itab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  document.querySelectorAll('.ipanel').forEach((p,i)=>p.classList.toggle('active',i===n));
+}
+
+function importarSeleccionados(){
+  const checks=document.querySelectorAll('.qi-check:checked:not(:disabled)');
+  if(!checks.length){toast('Seleccioná al menos uno','warn');return}
+  let count=0;
+  checks.forEach(ch=>{
+    const ep=EP_SESION.find(e=>e.id===ch.dataset.id);
+    if(ep&&!eps.some(e=>e.titulo===ep.titulo)){
+      const nuevo=JSON.parse(JSON.stringify(ep));
+      nuevo.id=nextId++; nuevo.dirty=false;
+      eps.push(nuevo); count++;
+    }
+  });
+  activo=eps[eps.length-1].id;
+  cerrarOverlay('ov-import');
+  guardar(); renderAll();
+  toast(`${count} episodio${count!==1?'s':''} importado${count!==1?'s':''} ✓`,'info');
+}
+
+// ── PASTE IMPORT ──
+function importarPaste(){
+  const txt=document.getElementById('paste-ta').value.trim();
+  if(!txt){toast('Pegá texto primero','warn');return}
+  const parsed=parsearTexto(txt);
+  if(!parsed.length){toast('No se encontraron guiones con el formato esperado','warn');return}
+  parsed.forEach(ep=>{eps.push(ep)});
+  activo=parsed[parsed.length-1].id;
+  document.getElementById('paste-ta').value='';
+  cerrarOverlay('ov-import');
+  guardar(); renderAll();
+  toast(`${parsed.length} guión${parsed.length!==1?'es':''} importado${parsed.length!==1?'s':''} ✓`,'info');
+}
+
+// ── FILE IMPORT ──
+function onFileSelect(e){
+  const files=[...e.target.files]; if(!files.length)return;
+  fileBuffer=[];
+  let done=0;
+  files.forEach(f=>{
+    const r=new FileReader();
+    r.onload=ev=>{
+      fileBuffer.push({name:f.name,content:ev.target.result});
+      done++;
+      if(done===files.length){
+        const prev=document.getElementById('file-preview');
+        prev.textContent=fileBuffer.map(f=>`── ${f.name} ──\n${f.content.slice(0,200)}...`).join('\n\n');
+        prev.classList.add('show');
+        const btn=document.getElementById('btn-import-file');
+        btn.disabled=false; btn.style.opacity='1'; btn.style.cursor='pointer';
+      }
+    };
+    r.readAsText(f);
+  });
+}
+
+function importarArchivo(){
+  if(!fileBuffer||!fileBuffer.length){toast('Seleccioná un archivo primero','warn');return}
+  let total=0;
+  fileBuffer.forEach(f=>{
+    // intentar JSON primero
+    if(f.name.endsWith('.json')){
+      try{
+        const data=JSON.parse(f.content);
+        const arr=Array.isArray(data)?data:[data];
+        arr.forEach(ep=>{
+          const nuevo=Object.assign({},ep,{id:nextId++,dirty:false});
+          eps.push(nuevo); total++;
+        });
+        return;
+      }catch(e){}
+    }
+    // txt: parsear
+    const parsed=parsearTexto(f.content);
+    parsed.forEach(ep=>{eps.push(ep);total++});
+  });
+  if(!total){toast('No se pudieron parsear los archivos','warn');return}
+  activo=eps[eps.length-1].id;
+  fileBuffer=null;
+  document.getElementById('file-preview').classList.remove('show');
+  document.getElementById('file-preview').textContent='';
+  const btn=document.getElementById('btn-import-file');
+  btn.disabled=true; btn.style.opacity='.5'; btn.style.cursor='not-allowed';
+  cerrarOverlay('ov-import');
+  guardar(); renderAll();
+  toast(`${total} guión${total!==1?'es':''} importado${total!==1?'s':''} ✓`,'info');
+}
+
+// ── PARSER ──
+function parsearTexto(txt){
+  const result=[];
+  // split por ## o por ══
+  const bloques=txt.split(/\n(?=##\s|══)/);
+  bloques.forEach(blk=>{
+    blk=blk.trim(); if(!blk)return;
+    const lines=blk.split('\n');
+    let titulo='';
+    // buscar título
+    const tLine=lines.find(l=>/^##\s/.test(l)||/^EP\s*\d+\s*—/.test(l));
+    if(tLine) titulo=tLine.replace(/^##\s*/,'').replace(/^EP\s*\d+\s*—\s*/,'').trim();
+    else titulo=lines[0].replace(/^#+\s*/,'').trim();
+    if(!titulo)return;
+
+    // detectar tipo
+    const isVo=/\[VOZ EN OFF\]/i.test(blk);
+    const ep={
+      id:nextId++, titulo, duracion:'60–90 seg',
+      eje:'Importado', tipo:isVo?'voz':'reel',
+      pilares:['alcance'], dirty:false
+    };
+
+    // duracion
+    const durM=blk.match(/[Dd]uración[:\s]+([^\n]+)/);
+    if(durM)ep.duracion=durM[1].trim();
+
+    if(isVo){
+      const voStart=blk.indexOf('[VOZ EN OFF]');
+      ep.voText=voStart>=0?blk.slice(voStart+12).trim():'';
+    } else {
+      ep.bloques=[];
+      const secMap={HOOK:'hook',DESARROLLO:'desarrollo',CTA:'cta'};
+      Object.entries(secMap).forEach(([key,tipo])=>{
+        const re=new RegExp(`\\[${key}[^\\]]*\\]([\\s\\S]*?)(?=\\[[A-Z]|$)`,'i');
+        const m=blk.match(re);
+        if(m){
+          const sec=m[1].trim();
+          const camM=sec.match(/[Cc]ámara[:\s]+([^\n]+(?:\n(?![A-Za-z]+:)[^\n]+)*)/);
+          const vozM=sec.match(/[Vv]oz[:\s]+"?([^"\n]+)"?/);
+          ep.bloques.push({
+            tipo, timing:'—',
+            instruccion:camM?camM[1].trim():sec.replace(/[Vv]oz:.*/,'').trim(),
+            voz:vozM?vozM[1].trim():''
+          });
+        }
+      });
+      if(!ep.bloques.length){
+        ep.bloques=[
+          {tipo:'hook',timing:'0 a 3 seg',instruccion:'',voz:''},
+          {tipo:'desarrollo',timing:'3 a 50 seg',instruccion:'',voz:''},
+          {tipo:'cta',timing:'50 a 75 seg',instruccion:'',voz:''}
+        ];
+      }
+    }
+    result.push(ep);
+  });
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════
+// OVERLAYS
+// ═══════════════════════════════════════════════════════
+function abrirOverlay(id){
+  document.getElementById(id).classList.add('show');
+  if(id==='ov-nuevo') setTimeout(()=>document.getElementById('n-titulo').focus(),120);
+}
+function cerrarOverlay(id){
+  document.getElementById(id).classList.remove('show');
+}
+// click fuera cierra
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('show')});
+});
+
+// drag & drop
+const dz=document.getElementById('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault(); dz.classList.remove('over');
+  const dt={target:{files:e.dataTransfer.files}};
+  onFileSelect(dt);
+});
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(type?` ${type}`:'')+' show';
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS HTML ESCAPE
+// ═══════════════════════════════════════════════════════
+function H(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function HA(s){return H(s)}
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+try{const s=localStorage.getItem('mia_g');if(s){const d=JSON.parse(s);if(d&&d.length)eps=d}}catch(e){}
+renderAll();
+</script>
+</body>
+</html>
